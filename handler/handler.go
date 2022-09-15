@@ -21,5 +21,6 @@ func Process(conn net.Conn, id int) {
 		recvStr := string(buf[:n])
 		fmt.Println("收到client端发来的数据：", recvStr)
 		conn.Write([]byte(recvStr)) // 发送数据
+
 	}
 }
