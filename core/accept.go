@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"go-socket/handler"
+	"go-socket/pool"
 	"net"
 )
 
@@ -21,9 +22,10 @@ func Accepts() {
 			continue
 		}
 
-		countNum += 1
+		p := pool.NewPool(20)
 
-		fmt.Println("当前连接数:", +countNum)
+		p.Close()
+
 		go handler.Process(conn, 1) // 启动一个goroutine处理连接
 	}
 }
