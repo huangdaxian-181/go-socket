@@ -1,7 +1,6 @@
 package pool
 
 import (
-	"fmt"
 	"go-socket/handler"
 	"net"
 )
@@ -32,7 +31,7 @@ type Pool struct {
 	EntryChannel chan *Task
 }
 
-//业务接口
+// 业务接口
 type TaskInfo interface {
 	Execute()
 }
@@ -53,26 +52,22 @@ func NewTask(conn net.Conn) *Task {
 	}
 }
 
-//工作类接收task传入EntryChannel
+// 工作类接收task传入EntryChannel
 func (p *Pool) Worker(t *Task) {
 	p.EntryChannel <- t
 }
 
-//业务处理类
+// 业务处理类
 func (p *Pool) Execute(work_id int) {
 	h := handler.NewHandler()
 
 	for task := range p.JobsChannel {
-		fmt.Println("工作线程work_id:", work_id)
-		h.Process(task.tcpConn)
-
+		h.Process(task.tcpConn, work_id)
 	}
-
 }
 
-//Run
+// Run
 func (p *Pool) Run() {
-
 	for i := 0; i < p.connCount; i++ {
 		go p.Execute(i)
 	}
@@ -81,9 +76,10 @@ func (p *Pool) Run() {
 		p.JobsChannel <- task
 	}
 
+	p.close()
 }
 
-//关闭连接
+// 关闭channer
 func (p *Pool) close() {
 	close(p.JobsChannel)
 

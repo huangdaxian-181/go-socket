@@ -16,14 +16,13 @@ func Accepts() {
 
 	go func() {
 		for {
-
 			conn, err := listen.Accept() // 建立连接
 			if err != nil {
 				fmt.Println("accept failed, err:", err)
 				continue
 			}
 			t := pool.NewTask(conn)
-			fmt.Println("t:", t)
+
 			p.Worker(t)
 		}
 	}()

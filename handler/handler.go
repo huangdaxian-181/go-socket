@@ -3,17 +3,24 @@ package handler
 import (
 	"bufio"
 	"fmt"
+	"go-socket/event"
 	"net"
 	"time"
 )
 
 type Handler struct {
-	conn    net.Conn
+	tcpConn net.Conn
+
 	outTime *time.Timer
+
+	//工作id
+	work_id int
+
+	//指定发送
+	event *event.Event
 }
 
 func NewHandler() *Handler {
-
 	h := &Handler{
 		outTime: time.NewTimer(30 * time.Second),
 	}
@@ -24,10 +31,13 @@ func NewHandler() *Handler {
 }
 
 // 数据处理
-func (h *Handler) Process(conn net.Conn) {
-	defer conn.Close() // 关闭连接
+func (h *Handler) Process(conn net.Conn, work_id int) {
+	// defer conn.Close() // 关闭连接
+	//调用链接赋值
+	h.tcpConn = conn
 
-	h.conn = conn
+	//赋值
+	h.work_id = work_id
 	for {
 		reader := bufio.NewReader(conn)
 		var buf [128]byte
@@ -36,22 +46,27 @@ func (h *Handler) Process(conn net.Conn) {
 			fmt.Println("read from client failed, err:", err)
 			break
 		}
-		recvStr := string(buf[:n])
-		fmt.Println("收到client端发来的数据：", recvStr)
-		conn.Write([]byte(recvStr)) // 发送数据
 
+		recvStr := string(buf[:n])
+
+		//重置过期时间
+		h.outTime.Reset(30 * time.Second)
+
+		fmt.Println("收到client端发来的数据：", recvStr)
+
+		conn.Write([]byte("你好")) // 发送数据
 	}
 }
 
 func (h *Handler) MsgBroadcastLoop() {
 	for {
 		select {
-		case outime := <-h.outTime.C:
-			fmt.Println("过期淘汰时间:", outime)
 
-			h.conn.Close()
-
-			panic(111)
+		case <-h.outTime.C:
+			if h.tcpConn != nil {
+				h.tcpConn.Close()
+				fmt.Println("过期地址:", h.tcpConn)
+			}
 		}
 	}
 }
