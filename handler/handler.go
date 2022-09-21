@@ -22,7 +22,7 @@ type Handler struct {
 
 func NewHandler() *Handler {
 	h := &Handler{
-		outTime: time.NewTimer(30 * time.Minute),
+		outTime: time.NewTimer(20 * time.Second),
 		event:   event.EventExamples,
 	}
 
@@ -48,24 +48,26 @@ func (h *Handler) Process(conn net.Conn, work_id int) {
 			fmt.Println("read from client failed, err:", err)
 			break
 		}
-
 		recvStr := string(buf[:n])
 
 		//重置过期时间
-		h.outTime.Reset(30 * time.Minute)
+		h.outTime.Reset(20 * time.Second)
 
 		fmt.Println("收到client端发来的数据：", recvStr)
 
-		conn.Write([]byte("你好")) // 发送数据
+		h.tcpConn.Write([]byte("你好"))
 	}
 }
 
 func (h *Handler) MsgBroadcastLoop() {
-	da := h.event.GetEvent()
+	data := h.event.Chan()
 	for {
 		select {
-		case msg := <-da:
-			fmt.Println(msg)
+		case e := <-data:
+
+			// h.tcpConn.Write(e.Data)
+			fmt.Println("走入进去", e.Data)
+
 		case <-h.outTime.C:
 			if h.tcpConn != nil {
 				h.tcpConn.Close()
@@ -73,4 +75,9 @@ func (h *Handler) MsgBroadcastLoop() {
 			}
 		}
 	}
+}
+
+// 发送消息
+func (h *Handler) SendMsg() {
+	h.event.PushMsg(event.NewEventExample(2, []byte("你哈")))
 }

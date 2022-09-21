@@ -8,39 +8,33 @@ package event
 **/
 
 type Event struct {
-	EventExample chan interface{}
+	EventExample chan *EventExample
 }
 
 type EventExample struct {
 	WorkId int
-
-	Data byte
+	Data   []byte
 }
 
 var EventExamples *Event = NewEvent()
 
 func NewEvent() *Event {
 	return &Event{
-		EventExample: make(chan interface{}, 200),
+		EventExample: make(chan *EventExample),
 	}
 }
 
-func NewEventExample(WorkId int, Data byte) *EventExample {
+func NewEventExample(WorkId int, Data []byte) *EventExample {
 	return &EventExample{
 		WorkId: WorkId,
 		Data:   Data,
 	}
 }
 
-//发送消息
-func (e *Event) SubEvent(ev *EventExample) {
-
-	go func() {
-		e.EventExample <- ev
-
-	}()
+func (e *Event) PushMsg(n *EventExample) {
+	e.EventExample <- n
 }
 
-func (e *Event) GetEvent() chan interface{} {
+func (e *Event) Chan() chan *EventExample {
 	return e.EventExample
 }

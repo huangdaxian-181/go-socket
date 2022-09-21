@@ -1,20 +1,12 @@
 package index
 
 import (
-	"fmt"
-	"go-socket/event"
+	"go-socket/common"
 	"testing"
 )
 
-func Test2(t *testing.T) {
-}
+var ch chan int
 
 func Test1(t *testing.T) {
-	e := event.EventExamples
-
-	e.SubEvent(event.NewEventExample(2131, byte(12)))
-
-	str := e.GetEvent()
-
-	fmt.Println(str)
+	common.H.SendMsg()
 }

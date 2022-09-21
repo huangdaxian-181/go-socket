@@ -1,7 +1,7 @@
 package pool
 
 import (
-	"go-socket/handler"
+	"go-socket/common"
 	"net"
 )
 
@@ -59,10 +59,8 @@ func (p *Pool) Worker(t *Task) {
 
 // 业务处理类
 func (p *Pool) Execute(work_id int) {
-	h := handler.NewHandler()
-
 	for task := range p.JobsChannel {
-		h.Process(task.tcpConn, work_id)
+		common.H.Process(task.tcpConn, work_id)
 	}
 }
 
